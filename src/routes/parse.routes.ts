@@ -11,6 +11,7 @@ class ParseRoutes {
 
   intializeRoutes() {
     this.router.post('/parse', this.controller.parse);
+    this.router.get('/parse-requests', this.controller.getParsedReqs);
   }
 }
 
