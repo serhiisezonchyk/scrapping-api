@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import ParseController from '../controllers/parse.controller';
-import { validateData } from '../middleware/validateData';
+import { logginAttemp } from '../middleware/logginAttemp';
 import { verifyToken } from '../middleware/verifyToken';
 
 class ParseRoutes {
@@ -12,8 +12,9 @@ class ParseRoutes {
   }
 
   intializeRoutes() {
-    this.router.get('/', verifyToken, this.controller.parse);
-    this.router.get('/parse-requests', verifyToken, this.controller.getParsedReqs);
+    this.router.get('/', verifyToken, logginAttemp, this.controller.parse);
+    this.router.get('/my-parsed-requests', verifyToken, this.controller.getUserParsedReqs);
+    this.router.get('/parsed-requests', verifyToken, this.controller.getParsedReqs);
   }
 }
 

@@ -37,12 +37,33 @@ export default class ParseController {
     });
     res.status(StatusCodes.OK).json({ message: 'Success', data });
   }
-  async getParsedReqs(req: Request, res: Response) {
+  async getUserParsedReqs(req: Request, res: Response) {
     const user = req.user;
     try {
       const data = await db.parseRequest.findMany({
         where: {
           userId: user?.id,
+        },
+        include: {
+          user: {
+            select: {
+              email: true,
+            },
+          },
+        },
+      });
+      res.status(StatusCodes.OK).json({ data: data });
+    } catch (error) {}
+  }
+  async getParsedReqs(req: Request, res: Response) {
+    try {
+      const data = await db.parseRequest.findMany({
+        include: {
+          user: {
+            select: {
+              email: true,
+            },
+          },
         },
       });
       res.status(StatusCodes.OK).json({ data: data });
