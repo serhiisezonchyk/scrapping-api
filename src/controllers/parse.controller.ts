@@ -2,6 +2,8 @@ import * as cheerio from 'cheerio';
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { db } from '../db';
+import fs from 'fs';
+
 interface ScrappedData {
   title: string;
   role: string;
@@ -32,10 +34,9 @@ export default class ParseController {
             socialLinks.push(href);
           }
         });
-
       data.push({ title, img, role, socialLinks });
     });
-    res.status(StatusCodes.OK).json({ message: 'Success', data });
+    // res.status(StatusCodes.OK).json({ message: 'Success', data });
   }
   async getUserParsedReqs(req: Request, res: Response) {
     const user = req.user;
