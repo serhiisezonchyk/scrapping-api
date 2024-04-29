@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
+import { StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 import { db } from '../db';
 export interface JwtType {
@@ -16,7 +17,10 @@ export default class AuthController {
       const isExist = await db.user.findUnique({
         where: email,
       });
-      if (!isExist) return res.status(401).json({ error: 'Invalid data', details: 'Invalid data. Try later.' });
+      if (!isExist)
+        return res
+          .status(StatusCodes.METHOD_NOT_ALLOWED)
+          .json({ error: 'Invalid data', details: 'Invalid data. Try later.' });
       const hashedPass = await bcrypt.hash(password, 10);
       await db.user.create({
         data: {
@@ -24,9 +28,9 @@ export default class AuthController {
           password: hashedPass,
         },
       });
-      res.status(201).json({ message: 'Success' });
+      res.status(StatusCodes.CREATED).json({ message: 'Success' });
     } catch (error) {
-      res.status(500).json({ error: 'SignUp was failed', details: error });
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'SignUp was failed', details: error });
     }
   }
   async signIn(req: Request, res: Response) {
@@ -37,9 +41,9 @@ export default class AuthController {
           email: email,
         },
       });
-      if (!user) return res.status(401).json({ error: 'Invalid credential', details: '' });
+      if (!user) return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'Invalid credential', details: '' });
       const isValidPass = await bcrypt.compare(password, user.password);
-      if (!isValidPass) return res.status(401).json({ error: 'Invalid credential', details: '' });
+      if (!isValidPass) return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'Invalid credential', details: '' });
 
       const exp = 1000 * 60 * 60 * 24;
       const token = generateJwt({ id: user.id, email: user.email }, exp);
@@ -49,13 +53,13 @@ export default class AuthController {
           httpOnly: true,
           maxAge: exp,
         })
-        .status(200)
+        .status(StatusCodes.OK)
         .json({ message: 'Success', data: userInfo });
     } catch (error) {
-      res.status(500).json({ error: 'Something went wrong while login.' });
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Something went wrong while login.' });
     }
   }
   async logout(req: Request, res: Response) {
-    res.clearCookie('token').status(200).json({ message: 'Success.' });
+    res.clearCookie('token').status(StatusCodes.OK).json({ message: 'Success.' });
   }
 }
