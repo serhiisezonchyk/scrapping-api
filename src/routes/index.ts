@@ -5,6 +5,6 @@ import parseRoutes from './parse.routes';
 const router: Router = Router();
 
 router.use('/auth', authRoutes);
-router.use('/post', parseRoutes);
+router.use('/parse', parseRoutes);
 
 export default router;

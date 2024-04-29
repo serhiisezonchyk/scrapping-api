@@ -15,9 +15,11 @@ export default class AuthController {
     const { email, password } = req.body;
     try {
       const isExist = await db.user.findUnique({
-        where: email,
+        where: {
+          email: email,
+        },
       });
-      if (!isExist)
+      if (isExist)
         return res
           .status(StatusCodes.METHOD_NOT_ALLOWED)
           .json({ error: 'Invalid data', details: 'Invalid data. Try later.' });
