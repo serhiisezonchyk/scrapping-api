@@ -9,6 +9,8 @@ interface SaveOutput {
   data: ScrappedData[];
 }
 export const saveOutput = async ({ email, attempId, data }: SaveOutput) => {
+  const fields = ['title', 'img', 'role', 'socialLinks'];
+
   const modifiedData = data.map((entry) => ({
     ...entry,
     socialLinks: entry.socialLinks.join(', '),
@@ -24,7 +26,6 @@ export const saveOutput = async ({ email, attempId, data }: SaveOutput) => {
       });
 
       // CSV CREATION
-      const fields = ['title', 'img', 'role', 'socialLinks'];
       const csv = parse(modifiedData, { fields });
       fs.writeFile(path.join(folderPath, `/${attempId}.csv`), csv, (err) => {
         if (err) throw err;
@@ -67,6 +68,7 @@ export const saveOutput = async ({ email, attempId, data }: SaveOutput) => {
       });
       return spreadsheet.data.spreadsheetUrl;
     }
+    return null;
   } catch (error) {
     console.log(error);
     return null;
