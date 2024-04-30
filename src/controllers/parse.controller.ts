@@ -1,18 +1,30 @@
 import * as cheerio from 'cheerio';
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { db } from '../db';
-import fs from 'fs';
 
-interface ScrappedData {
+import { db } from '../db';
+import { saveOutput } from '../utils/saveOutput';
+export interface ScrappedData {
   title: string;
   role: string;
   img: string;
   socialLinks: Array<string>;
 }
+
+interface SaveOutputResponse {
+  message: string;
+  data: ScrappedData[];
+  length: number;
+  isFileSaved?: string;
+}
+
 export default class ParseController {
   async parse(req: Request, res: Response) {
+    const user = req.user;
+    const attempId = req.attempId;
+
     const link = 'https://interaction24.ixda.org/';
+
     const pageResp = await fetch(link);
     const text = await pageResp.text();
     const data: ScrappedData[] = [];
@@ -36,7 +48,26 @@ export default class ParseController {
         });
       data.push({ title, img, role, socialLinks });
     });
-    // res.status(StatusCodes.OK).json({ message: 'Success', data });
+
+    const isFileSaved = await saveOutput({ email: user?.email!, attempId: attempId!, data });
+    const responseObject: SaveOutputResponse = {
+      message: 'Success',
+      data: data,
+      length: data.length,
+    };
+    if (isFileSaved) {
+      await db.parseRequest.update({
+        where: {
+          id: attempId!,
+        },
+        data: {
+          success: true,
+          link: isFileSaved,
+        },
+      });
+      responseObject.isFileSaved = isFileSaved;
+    }
+    res.status(StatusCodes.OK).json(responseObject);
   }
   async getUserParsedReqs(req: Request, res: Response) {
     const user = req.user;
